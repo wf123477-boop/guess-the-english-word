@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>多益英文單字解釋遊戲</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f3f7fa;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      color: #2c3e50;
+      text-align: center;
+    }
+    .game-box {
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      max-width: 500px;
+      width: 100%;
+    }
+    .sentence {
+      background: #eef6fb;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 6px;
+    }
+    .btn {
+      margin: 8px 0;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      width: 100%;
+      text-align: left;
+    }
+    .btn-option {
+      background: #ecf0f1;
+    }
+    .btn-option:hover {
+      background: #d0e6f7;
+    }
+    .btn-primary {
+      background: #3498db;
+      color: white;
+      width: auto;
+      margin-top: 10px;
+    }
+    #result {
+      font-weight: bold;
+      margin-top: 15px;
+      text-align: center;
+    }
+    #score {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 15px;
+      text-align: center;
+      color: #27ae60;
+    }
+  </style>
+</head>
+<body>
+  <h1>📘 多益單字解釋遊戲</h1>
+  <div class="game-box">
+    <div id="score">目前分數：0</div>
+    <h2 id="word"></h2>
+    <button class="btn btn-primary" onclick="playAudio()">🔊 聽單字</button>
+    <div id="sentences"></div>
+    <div id="options"></div>
+    <p id="result"></p>
+    <button class="btn btn-primary" onclick="nextWord()">下一題</button>
+  </div>
+
+  <script>
+    const words = [
+      {
+        word: "conference",
+        sentences: [
+          "The company will hold a conference next week in Tokyo.",
+          "She attended an international conference on marketing.",
+          "The annual sales conference was very successful."
+        ],
+        correct: "a formal meeting for discussion",
+        options: [
+          "a formal meeting for discussion",
+          "a financial document",
+          "a written contract",
+          "a promotional event"
+        ]
+      },
+      {
+        word: "invoice",
+        sentences: [
+          "The supplier sent us an invoice for the delivered goods.",
+          "Please make sure the invoice includes the correct details.",
+          "We cannot process payment without an invoice."
+        ],
+        correct: "a bill for goods or services provided",
+        options: [
+          "a bill for goods or services provided",
+          "a legal agreement",
+          "a business meeting",
+          "a project deadline"
+        ]
+      },
+      {
+        word: "deadline",
+        sentences: [
+          "The project must be completed before the deadline.",
+          "He worked late to meet the deadline.",
+          "Missing the deadline could affect the company's reputation."
+        ],
+        correct: "the latest time something must be done",
+        options: [
+          "the latest time something must be done",
+          "a signed contract",
+          "a financial statement",
+          "an annual conference"
+        ]
+      },
+      {
+        word: "promotion",
+        sentences: [
+          "She received a promotion after her excellent performance.",
+          "The store is running a special promotion this weekend.",
+          "His hard work earned him a promotion to manager."
+        ],
+        correct: "advancement in rank or a marketing activity",
+        options: [
+          "advancement in rank or a marketing activity",
+          "a written invoice",
+          "a meeting of managers",
+          "a strict deadline"
+        ]
+      },
+      {
+        word: "contract",
+        sentences: [
+          "Both parties signed the contract yesterday.",
+          "The contract includes all the terms and conditions.",
+          "They are negotiating a new contract with the supplier."
+        ],
+        correct: "a written or spoken agreement",
+        options: [
+          "a written or spoken agreement",
+          "a financial bill",
+          "a promotional campaign",
+          "a formal discussion"
+        ]
+      }
+    ];
+
+    let score = 0;
+    let currentWordIndex = 0;
+
+    function shuffleArray(array) {
+      return array.sort(() => Math.random() - 0.5);
+    }
+
+    function loadWord() {
+      const randomIndex = Math.floor(Math.random() * words.length);
+      currentWordIndex = randomIndex;
+      const wordObj = words[randomIndex];
+
+      document.getElementById("word").textContent = "單字：" + wordObj.word;
+
+      const sentencesDiv = document.getElementById("sentences");
+      sentencesDiv.innerHTML = "";
+      wordObj.sentences.forEach(s => {
+        const p = document.createElement("p");
+        p.className = "sentence";
+        p.textContent = s;
+        sentencesDiv.appendChild(p);
+      });
+
+      const optionsDiv = document.getElementById("options");
+      optionsDiv.innerHTML = "";
+      shuffleArray(wordObj.options).forEach(opt => {
+        const btn = document.createElement("button");
+        btn.className = "btn btn-option";
+        btn.textContent = opt;
+        btn.onclick = () => checkAnswer(opt);
+        optionsDiv.appendChild(btn);
+      });
+
+      document.getElementById("result").textContent = "";
+    }
+
+    function playAudio() {
+      const wordObj = words[currentWordIndex];
+      const utterance = new SpeechSynthesisUtterance(wordObj.word);
+      utterance.lang = "en-US";
+      speechSynthesis.speak(utterance);
+    }
+
+    function checkAnswer(selected) {
+      const wordObj = words[currentWordIndex];
+      const result = document.getElementById("result");
+      if (selected === wordObj.correct) {
+        result.textContent = "✅ 正確！";
+        result.style.color = "green";
+        score++;
+        document.getElementById("score").textContent = "目前分數：" + score;
+      } else {
+        result.textContent = "❌ 錯誤，正確答案是：" + wordObj.correct;
+        result.style.color = "red";
+      }
+    }
+
+    function nextWord() {
+      loadWord();
+    }
+
+    // 初始化
+    loadWord();
+  </script>
+</body>
+</html>
